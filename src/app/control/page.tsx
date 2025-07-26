@@ -1,50 +1,85 @@
+'use client'
+
+import { useState } from 'react'
 import { Card, CardContent, CardHeader } from '@/components/ui/Card'
 import { Table, TableBody, TableCell, TableHeader, TableHeaderCell, TableRow } from '@/components/ui/Table'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
+import { MdSettings, MdAnnouncement, MdNotifications, MdAnalytics, MdRoute } from 'react-icons/md'
+
+interface Tren {
+  id: string
+  modelo: string
+  estado: string
+  ubicacion: string
+  capacidad: number
+  velocidadMaxima: number
+  linea: { nombre: string }
+  metricas: Array<{ velocidadPromedio: number; pasajerosTransportados: number }>
+}
+
+interface AlertaControl {
+  id: string
+  tipo: string
+  mensaje: string
+  prioridad: string
+  fechaCreacion: string
+  resuelta: boolean
+}
 
 export default function ControlPage() {
-  const trenesTodas = [
-    { id: 'TR-001', linea: 'L1', ubicacion: 'Est. Central → Norte', velocidad: '65 km/h', pasajeros: '180/300', estado: 'En Ruta' },
-    { id: 'TR-002', linea: 'L2', ubicacion: 'Terminal Norte', velocidad: '0 km/h', pasajeros: '45/280', estado: 'Estacionado' },
-    { id: 'TR-003', linea: 'L1', ubicacion: 'Taller', velocidad: '0 km/h', pasajeros: '0/250', estado: 'Mantenimiento' },
-    { id: 'TR-004', linea: 'L3', ubicacion: 'Est. Sur → Centro', velocidad: '70 km/h', pasajeros: '220/300', estado: 'En Ruta' }
+  // Static data for demo purposes
+  const trenes: Tren[] = [
+    { id: 'TR-001', modelo: 'Modelo A', estado: 'EnServicio', ubicacion: 'Estación Central', capacidad: 300, velocidadMaxima: 80, linea: { nombre: 'Línea 1' }, metricas: [{ velocidadPromedio: 45, pasajerosTransportados: 120 }] },
+    { id: 'TR-002', modelo: 'Modelo B', estado: 'Mantenimiento', ubicacion: 'Taller Norte', capacidad: 280, velocidadMaxima: 75, linea: { nombre: 'Línea 2' }, metricas: [{ velocidadPromedio: 0, pasajerosTransportados: 0 }] },
+    { id: 'TR-003', modelo: 'Modelo C', estado: 'EnServicio', ubicacion: 'Estación Sur', capacidad: 320, velocidadMaxima: 85, linea: { nombre: 'Línea 3' }, metricas: [{ velocidadPromedio: 52, pasajerosTransportados: 180 }] }
   ]
 
-  const estaciones = [
-    { nombre: 'Terminal Norte', linea: 'L1', pasajeros: '145', estado: 'Normal', proximoTren: '2 min' },
-    { nombre: 'Centro Comercial', linea: 'L2', pasajeros: '89', estado: 'Normal', proximoTren: '4 min' },
-    { nombre: 'Universidad', linea: 'L1', pasajeros: '201', estado: 'Saturada', proximoTren: '1 min' },
-    { nombre: 'Plaza Mayor', linea: 'L3', pasajeros: '67', estado: 'Normal', proximoTren: '6 min' }
+  const alertas: AlertaControl[] = [
+    { id: 'A001', tipo: 'Sistema', mensaje: 'Mantenimiento programado en Línea 2', prioridad: 'Media', fechaCreacion: new Date().toISOString(), resuelta: false },
+    { id: 'A002', tipo: 'Operacional', mensaje: 'Retraso menor en Estación Central', prioridad: 'Baja', fechaCreacion: new Date().toISOString(), resuelta: false }
   ]
 
-  const incidentes = [
-    { id: 'INC-001', tipo: 'Retraso', ubicacion: 'L1 - Km 15', descripcion: 'Tren TR-001 con retraso de 3 min', prioridad: 'Media' },
-    { id: 'INC-002', tipo: 'Saturación', ubicacion: 'Universidad', descripcion: 'Estación con alta concentración', prioridad: 'Alta' },
-    { id: 'INC-003', tipo: 'Mantenimiento', ubicacion: 'L3 - Vía Sur', descripcion: 'Trabajo programado en vías', prioridad: 'Baja' }
-  ]
+  const [alertMessage, setAlertMessage] = useState('')
+
+  const handleControlAction = (action: string, trenId?: string) => {
+    console.log('Control action:', { action, trenId, mensaje: alertMessage })
+    setAlertMessage('')
+    alert(`Acción "${action}" ejecutada exitosamente`)
+  }
+
+  const resolverIncidente = (alertaId: string) => {
+    console.log('Resolving incident:', alertaId)
+    alert('Incidente resuelto exitosamente')
+  }
+
+  // Calculate real-time metrics from actual data
+  const trenesActivos = trenes.filter(t => t.estado === 'EnServicio')
+  const velocidadPromedio = trenes.length > 0 ? 
+    Math.round(trenes.reduce((acc, tren) => {
+      const metrica = tren.metricas?.[0]
+      return acc + (metrica?.velocidadPromedio || 0)
+    }, 0) / trenes.length) : 0
+    
+  const pasajerosTotales = trenes.reduce((acc, tren) => {
+    const metrica = tren.metricas?.[0]
+    return acc + (metrica?.pasajerosTransportados || 0)
+  }, 0)
+
+  const incidentesActivos = alertas.filter(a => !a.resuelta)
 
   const metricas = [
-    { nombre: 'Puntualidad', valor: '94.2%', estado: 'Bueno' },
-    { nombre: 'Ocupación Promedio', valor: '68%', estado: 'Normal' },
-    { nombre: 'Velocidad Promedio', valor: '52 km/h', estado: 'Óptimo' },
-    { nombre: 'Tiempo Entre Trenes', valor: '3.2 min', estado: 'Bueno' }
+    { nombre: 'Trenes Activos', valor: `${trenesActivos.length}/${trenes.length}`, estado: 'Bueno' },
+    { nombre: 'Pasajeros/hora', valor: `${pasajerosTotales}`, estado: 'Normal' },
+    { nombre: 'Velocidad Promedio', valor: `${velocidadPromedio} km/h`, estado: 'Óptimo' },
+    { nombre: 'Incidentes Activos', valor: `${incidentesActivos.length}`, estado: incidentesActivos.length > 5 ? 'Crítico' : 'Bueno' }
   ]
 
   const getEstadoTrenColor = (estado: string) => {
     switch (estado) {
-      case 'En Ruta': return 'success'
+      case 'EnServicio': return 'success'
       case 'Estacionado': return 'info'
       case 'Mantenimiento': return 'warning'
-      default: return 'default'
-    }
-  }
-
-  const getEstadoEstacionColor = (estado: string) => {
-    switch (estado) {
-      case 'Normal': return 'success'
-      case 'Saturada': return 'warning'
-      case 'Cerrada': return 'error'
       default: return 'default'
     }
   }
@@ -85,16 +120,13 @@ export default function ControlPage() {
             Centro de control operacional del sistema de metro
           </p>
         </div>
-        <Button variant="primary" className="bg-orange-500 hover:bg-orange-600">
-          📡 Vista General
-        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
-              <p className="text-2xl font-bold text-orange-600">12</p>
+              <p className="text-2xl font-bold text-orange-600">{trenesActivos.length}</p>
               <p className="text-sm text-gray-600">Trenes Activos</p>
             </div>
           </CardContent>
@@ -102,15 +134,15 @@ export default function ControlPage() {
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">24</p>
-              <p className="text-sm text-gray-600">Estaciones</p>
+              <p className="text-2xl font-bold text-green-600">{trenes.length}</p>
+              <p className="text-sm text-gray-600">Total Trenes</p>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
-              <p className="text-2xl font-bold text-blue-600">2,450</p>
+              <p className="text-2xl font-bold text-blue-600">{pasajerosTotales}</p>
               <p className="text-sm text-gray-600">Pasajeros/hora</p>
             </div>
           </CardContent>
@@ -118,7 +150,7 @@ export default function ControlPage() {
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
-              <p className="text-2xl font-bold text-yellow-600">3</p>
+              <p className="text-2xl font-bold text-yellow-600">{incidentesActivos.length}</p>
               <p className="text-sm text-gray-600">Incidentes</p>
             </div>
           </CardContent>
@@ -145,25 +177,54 @@ export default function ControlPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {trenesTodas.map((tren) => (
-                    <TableRow key={tren.id}>
-                      <TableCell className="font-medium">{tren.id}</TableCell>
-                      <TableCell>{tren.linea}</TableCell>
-                      <TableCell>{tren.ubicacion}</TableCell>
-                      <TableCell>{tren.velocidad}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <div className="w-12 bg-gray-200 rounded-full h-2">
-                            <div 
-                              className={`h-2 rounded-full ${getOcupacionColor(tren.pasajeros)}`}
-                              style={{ width: `${(parseInt(tren.pasajeros.split('/')[0]) / parseInt(tren.pasajeros.split('/')[1])) * 100}%` }}
-                            ></div>
+                  {trenes.map((tren) => {
+                    const metrica = tren.metricas?.[0]
+                    const ocupacion = metrica ? `${metrica.pasajerosTransportados}/${tren.capacidad}` : `0/${tren.capacidad}`
+                    const velocidad = metrica ? `${metrica.velocidadPromedio} km/h` : '0 km/h'
+                    
+                    return (
+                      <TableRow key={tren.id}>
+                        <TableCell className="font-medium">{tren.modelo}</TableCell>
+                        <TableCell>{tren.linea?.nombre || 'N/A'}</TableCell>
+                        <TableCell>{tren.ubicacion}</TableCell>
+                        <TableCell>{velocidad}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-12 bg-gray-200 rounded-full h-2">
+                              <div 
+                                className={`h-2 rounded-full ${getOcupacionColor(ocupacion)}`}
+                                style={{ width: `${(metrica?.pasajerosTransportados || 0) / tren.capacidad * 100}%` }}
+                              ></div>
+                            </div>
+                            <span className="text-sm">{ocupacion}</span>
                           </div>
+<<<<<<< HEAD
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={getEstadoTrenColor(tren.estado)} size="sm">
+                            {tren.estado}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-orange-600 flex items-center space-x-1"
+                            onClick={() => handleControlAction('control_tren', tren.id)}
+                          >
+                            <MdSettings className="w-4 h-4" />
+                            <span>Control</span>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+=======
                           <span className="text-sm">{tren.pasajeros}</span>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={getEstadoTrenColor(tren.estado) as any} size="sm">
+                        <Badge variant={getEstadoTrenColor(tren.estado) as unknown } size="sm">
                           {tren.estado}
                         </Badge>
                       </TableCell>
@@ -174,6 +235,7 @@ export default function ControlPage() {
                       </TableCell>
                     </TableRow>
                   ))}
+>>>>>>> 23de2d2a7e3875becd5108be6fdf04edd7070781
                 </TableBody>
               </Table>
             </CardContent>
@@ -207,8 +269,34 @@ export default function ControlPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold">Estado de Estaciones</h3>
+            <h3 className="text-lg font-semibold">Panel de Anuncios</h3>
           </CardHeader>
+<<<<<<< HEAD
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Mensaje de Anuncio General
+                </label>
+                <textarea
+                  value={alertMessage}
+                  onChange={(e) => setAlertMessage(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  rows={3}
+                  placeholder="Escriba el mensaje para anuncio general..."
+                />
+              </div>
+              <Button 
+                onClick={() => handleControlAction('anuncio')}
+                disabled={!alertMessage.trim()}
+                className="w-full flex items-center justify-center space-x-2"
+                variant="primary"
+              >
+                <MdAnnouncement className="w-4 h-4" />
+                <span>Enviar Anuncio General</span>
+              </Button>
+            </div>
+=======
           <CardContent className="p-0">
             <Table>
               <TableHeader>
@@ -227,7 +315,7 @@ export default function ControlPage() {
                     <TableCell>{estacion.linea}</TableCell>
                     <TableCell>{estacion.pasajeros}</TableCell>
                     <TableCell>
-                      <Badge variant={getEstadoEstacionColor(estacion.estado) as any} size="sm">
+                      <Badge variant={getEstadoEstacionColor(estacion.estado) as unknown } size="sm">
                         {estacion.estado}
                       </Badge>
                     </TableCell>
@@ -236,100 +324,55 @@ export default function ControlPage() {
                 ))}
               </TableBody>
             </Table>
+>>>>>>> 23de2d2a7e3875becd5108be6fdf04edd7070781
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold">Incidentes Activos</h3>
+            <h3 className="text-lg font-semibold">Alertas del Sistema</h3>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {incidentes.map((incidente) => (
-                <div key={incidente.id} className="p-3 bg-gray-50 rounded-lg">
+            <div className="space-y-3 max-h-80 overflow-y-auto">
+              {incidentesActivos.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <p>No hay alertas activas</p>
+                </div>
+              ) : incidentesActivos.map((alerta) => (
+                <div key={alerta.id} className="p-3 bg-gray-50 rounded-lg">
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="font-medium text-gray-900">{incidente.tipo}</p>
-                      <p className="text-sm text-gray-600">{incidente.ubicacion}</p>
-                      <p className="text-sm text-gray-500 mt-1">{incidente.descripcion}</p>
+                      <p className="font-medium text-gray-900">{alerta.tipo}</p>
+                      <p className="text-sm text-gray-500 mt-1">{alerta.mensaje}</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {new Date(alerta.fechaCreacion).toLocaleDateString()}
+                      </p>
                     </div>
-                    <Badge variant={getPrioridadColor(incidente.prioridad) as any} size="sm">
+<<<<<<< HEAD
+                    <Badge variant={getPrioridadColor(alerta.prioridad)} size="sm">
+                      {alerta.prioridad}
+=======
+                    <Badge variant={getPrioridadColor(incidente.prioridad) as unknown } size="sm">
                       {incidente.prioridad}
+>>>>>>> 23de2d2a7e3875becd5108be6fdf04edd7070781
                     </Badge>
                   </div>
                   <div className="mt-3 flex space-x-2">
-                    <Button variant="ghost" size="sm" className="text-orange-600">Ver</Button>
-                    <Button variant="ghost" size="sm" className="text-orange-600">Resolver</Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-orange-600"
+                      onClick={() => resolverIncidente(alerta.id)}
+                    >
+                      Resolver
+                    </Button>
                   </div>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <h3 className="text-lg font-semibold">Panel de Control Central</h3>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-4">
-              <h4 className="font-medium text-gray-700">Control de Tráfico</h4>
-              <div className="space-y-2">
-                <Button variant="secondary" className="w-full justify-start">
-                  🚦 Regulación Automática
-                </Button>
-                <Button variant="secondary" className="w-full justify-start">
-                  ⏱️ Ajustar Frecuencias
-                </Button>
-                <Button variant="secondary" className="w-full justify-start">
-                  🔄 Optimizar Rutas
-                </Button>
-                <Button variant="secondary" className="w-full justify-start">
-                  📊 Análisis de Flujo
-                </Button>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h4 className="font-medium text-gray-700">Comunicaciones</h4>
-              <div className="space-y-2">
-                <Button variant="secondary" className="w-full justify-start">
-                  📢 Anuncio General
-                </Button>
-                <Button variant="secondary" className="w-full justify-start">
-                  📱 Notificar Conductores
-                </Button>
-                <Button variant="secondary" className="w-full justify-start">
-                  🔊 Mensaje Estaciones
-                </Button>
-                <Button variant="secondary" className="w-full justify-start">
-                  📺 Actualizar Pantallas
-                </Button>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h4 className="font-medium text-gray-700">Acciones de Emergencia</h4>
-              <div className="space-y-2">
-                <Button className="w-full bg-red-500 hover:bg-red-600 text-white">
-                  🚨 Parada de Emergencia
-                </Button>
-                <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-white">
-                  ⚠️ Evacuación Parcial
-                </Button>
-                <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
-                  🚇 Servicio Limitado
-                </Button>
-                <Button variant="secondary" className="w-full">
-                  📋 Protocolo Emergencia
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      </div>26
     </div>
   )
 }

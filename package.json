@@ -19,10 +19,11 @@
   },
   "dependencies": {
     "@prisma/client": "^6.12.0",
-    "next": "15.4.1",
+    "next": "^15.4.4",
     "prisma": "^6.12.0",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "react-icons": "^5.5.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -34,6 +35,11 @@
     "eslint-config-next": "15.4.1",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
-    "typescript": "^5"
+<<<<<<< HEAD
+    "typescript": "^5",
+    "@types/bun": "latest"
+=======
+    "typescript": "^5.8.3"
+>>>>>>> 23de2d2a7e3875becd5108be6fdf04edd7070781
   }
 }

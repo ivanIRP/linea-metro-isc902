@@ -108,9 +108,6 @@ export default function ElectricidadPage() {
             Control y monitoreo del sistema de alimentación eléctrica
           </p>
         </div>
-        <Button variant="primary" className="bg-orange-500 hover:bg-orange-600">
-          ⚡ Estado General
-        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -186,7 +183,7 @@ export default function ElectricidadPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={getEstadoColor(sub.estado) as any} size="sm">
+                        <Badge variant={getEstadoColor(sub.estado) as unknown } size="sm">
                           {sub.estado}
                         </Badge>
                       </TableCell>
@@ -215,7 +212,7 @@ export default function ElectricidadPage() {
                         <p className="font-medium text-gray-900">{alerta.tipo}</p>
                         <p className="text-sm text-gray-600">{alerta.ubicacion}</p>
                       </div>
-                      <Badge variant={getNivelColor(alerta.nivel) as any} size="sm">
+                      <Badge variant={getNivelColor(alerta.nivel) as unknown } size="sm">
                         {alerta.nivel}
                       </Badge>
                     </div>
@@ -308,7 +305,7 @@ export default function ElectricidadPage() {
                     <TableCell className="font-medium">{equipo.equipo}</TableCell>
                     <TableCell>{equipo.ubicacion}</TableCell>
                     <TableCell>
-                      <Badge variant={getEstadoColor(equipo.estado) as any} size="sm">
+                      <Badge variant={getEstadoColor(equipo.estado) as unknown } size="sm">
                         {equipo.estado}
                       </Badge>
                     </TableCell>
@@ -328,7 +325,7 @@ export default function ElectricidadPage() {
           <h3 className="text-lg font-semibold">Panel de Control Eléctrico</h3>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-4">
               <h4 className="font-medium text-gray-700">Control de Subestaciones</h4>
               <div className="space-y-2">
@@ -365,23 +362,6 @@ export default function ElectricidadPage() {
               </div>
             </div>
 
-            <div className="space-y-4">
-              <h4 className="font-medium text-gray-700">Acciones de Emergencia</h4>
-              <div className="space-y-2">
-                <Button className="w-full bg-red-500 hover:bg-red-600 text-white text-sm">
-                  🚨 Corte General
-                </Button>
-                <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-white text-sm">
-                  ⚠️ Reducir Carga
-                </Button>
-                <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm">
-                  🔄 Redistribuir Carga
-                </Button>
-                <Button variant="secondary" className="w-full text-sm">
-                  📊 Generar Reporte
-                </Button>
-              </div>
-            </div>
           </div>
         </CardContent>
       </Card>
